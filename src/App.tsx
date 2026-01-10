@@ -34,14 +34,57 @@ const mockLifts: LiftInfo[] = [
 
 function App() {
   const [lifts, setLifts] = useState<LiftInfo[]>(mockLifts);
+  const [selectedLift, setSelectedLift] = useState<LiftInfo>({
+    name: "Back Squat",
+    personalRecord: { weightInPounds: 315, reps: 5 },
+  });
+  const [newGoal, setNewGoal] = useState<number>(
+    selectedLift.personalRecord.weightInPounds
+  );
+
+  const handleGoalChange = (e: React.SyntheticEvent<HTMLInputElement>) => {
+    setNewGoal(Number(e.currentTarget.value));
+  };
+
+  const handleSelectedLift = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const foundLift = lifts.find((lift) => lift.name === e.currentTarget.value);
+    if (foundLift) {
+      setSelectedLift(foundLift);
+      setNewGoal(foundLift.personalRecord.weightInPounds);
+    }
+  };
+
   return (
     <>
-      {mockLifts.map((lift) => (
-        <span>
-          {lift.name} : {lift.personalRecord.weightInPounds}lbs and{" "}
-          {lift.personalRecord.reps} reps
-        </span>
+      {lifts.map((lift) => (
+        <div key={lift.name}>
+          <span>
+            {lift.name} : {lift.personalRecord.weightInPounds}lbs and{" "}
+            {lift.personalRecord.reps} reps
+          </span>
+          <br />
+        </div>
       ))}
+      <form action="">
+        <select
+          name="lifts"
+          id="lifts"
+          onChange={(e) => handleSelectedLift(e)}
+          value={selectedLift.name}
+        >
+          {lifts.map((lift) => (
+            <option key={lift.name}>{lift.name}</option>
+          ))}
+        </select>
+        {selectedLift && (
+          <input
+            value={newGoal}
+            onChange={(e) => handleGoalChange(e)}
+            type="number"
+            min={selectedLift.personalRecord.weightInPounds}
+          />
+        )}
+      </form>
     </>
   );
 }
