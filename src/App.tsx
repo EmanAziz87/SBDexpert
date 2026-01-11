@@ -5,50 +5,77 @@ interface LiftInfo {
   personalRecord: { weightInPounds: number; reps: number; currentGoal: number };
 }
 
-type SplitType = "days" | "weeks";
-
 const trainingBlockPercentages = (
-  trainingBlockLength: number,
-  intervalLength: number
+  trainingBlockWeeks: number,
+  weeklyFrequency: number,
+  minimumIntensity: number
 ) => {
-  if (trainingBlockLength % intervalLength !== 0 || trainingBlockLength > 30) {
-    console.error(
-      "training block length must be a multiple of block interval and it must be less than 31, otherwise, choose the weekly option"
-    );
+  if (
+    trainingBlockWeeks < 1 ||
+    trainingBlockWeeks > 12 ||
+    weeklyFrequency < 1 ||
+    weeklyFrequency > 7
+  ) {
+    console.error("Values out of range: Weeks (1-12), Frequency (1-7)");
     return -1;
   }
 
-  if (intervalLength > 6) {
-    console.error(
-      "block interval must be 6 or less days, otherwise choose the weekly option"
-    );
-    return -1;
-  }
-
-  let intervals: number = trainingBlockLength / intervalLength;
-  let interval = 1;
   const intensityVolumeAdjustments = [];
-  while (intervals > 0) {
-    const weekIntensity = {
-      interval: interval,
-      intervalLength,
-      trainingBlockLength,
-      percentOf1RepMax: 100 - (intervals - 1) * 10,
-    };
-    intensityVolumeAdjustments.push(weekIntensity);
-    interval++;
-    intervals--;
+  const minIntensity = minimumIntensity;
+  const maxIntensity = 100;
+
+  // total growth is 50%
+  const totalGrowth = maxIntensity - minIntensity;
+
+  // weekly volume increases. Take total growth which is 50% and divide it by the
+  // amount of weeks in our training block minus 1. so if the training block is 8 weeks, then
+  // 50% / 7 = 7.14% increase per week in intensity. Why do we subtract one from our training
+  // block weeks before we divide from totalGrowth? because 50% counts as the first week. so
+  // there should be 7 jumps left to get to 100% intensity.
+  const weeklyStep =
+    trainingBlockWeeks > 1 ? totalGrowth / (trainingBlockWeeks - 1) : 0;
+
+  for (let i = 0; i < trainingBlockWeeks; i++) {
+    const currentWeek = i + 1;
+    const intensity = Math.round(minIntensity + i * weeklyStep);
+
+    let repsPerSet = 0;
+    let setsPerSession = 0;
+
+    if (intensity === 100) {
+      setsPerSession = 1;
+      repsPerSet = 1;
+    } else if (intensity >= 95) {
+      setsPerSession = 3;
+      repsPerSet = 1;
+    } else if (intensity > 90) {
+      setsPerSession = 5;
+      repsPerSet = 1;
+    } else if (intensity >= 85) {
+      setsPerSession = 5;
+      repsPerSet = 2;
+    } else {
+      setsPerSession = 5;
+      repsPerSet = 5;
+    }
+
+    const totalWeeklySetsPerLift = setsPerSession * weeklyFrequency;
+
+    intensityVolumeAdjustments.push({
+      week: currentWeek,
+      intensityPercent: intensity,
+      weeklyFrequency: weeklyFrequency,
+      setsPerSession: setsPerSession,
+      repsPerSet: repsPerSet,
+      totalWeeklySetsPerLift: totalWeeklySetsPerLift,
+    });
   }
-  console.log(intensityVolumeAdjustments);
+
+  console.table(intensityVolumeAdjustments);
+  return intensityVolumeAdjustments;
 };
 
-trainingBlockPercentages(30, 6);
-
-const progressionScheme = (
-  currentWeight: number,
-  goalWeight: number,
-  lift: string
-) => {};
+trainingBlockPercentages(10, 6, 40);
 
 const mockLifts: LiftInfo[] = [
   {
