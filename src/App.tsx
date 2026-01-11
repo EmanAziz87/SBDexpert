@@ -1,8 +1,14 @@
-import { useState } from "react";
+import React, { useState } from "react";
 
 interface LiftInfo {
   name: string;
   personalRecord: { weightInPounds: number; reps: number; currentGoal: number };
+}
+
+interface TrainingBlockObj {
+  trainingBlockWeeks: number;
+  weeklyFrequency: number;
+  minimumIntensity: number;
 }
 
 const trainingBlockPercentages = (
@@ -75,7 +81,9 @@ const trainingBlockPercentages = (
   return intensityVolumeAdjustments;
 };
 
-trainingBlockPercentages(10, 6, 40);
+// find weekly schedule. distribute lifts equally across weekly frequency.
+
+// const liftDays = ();
 
 const mockLifts: LiftInfo[] = [
   {
@@ -113,6 +121,11 @@ function App() {
   const [newGoal, setNewGoal] = useState<number>(
     selectedLift.personalRecord.weightInPounds
   );
+  const [newTrainingBlock, setNewTrainingBlock] = useState<TrainingBlockObj>({
+    trainingBlockWeeks: 0,
+    weeklyFrequency: 0,
+    minimumIntensity: 0,
+  });
 
   const handleGoalChange = (e: React.SyntheticEvent<HTMLInputElement>) => {
     setNewGoal(Number(e.currentTarget.value));
@@ -138,6 +151,48 @@ function App() {
       ...lifts.filter((lift) => lift.name !== newLiftObject.name),
       newLiftObject,
     ]);
+  };
+
+  const handleTrainingProgramSubmission = (
+    e: React.SyntheticEvent<HTMLFormElement>
+  ) => {
+    e.preventDefault();
+
+    trainingBlockPercentages(
+      newTrainingBlock.trainingBlockWeeks,
+      newTrainingBlock.weeklyFrequency,
+      newTrainingBlock.minimumIntensity
+    );
+  };
+
+  const handleNewTrainingBlockInputs = (
+    e: React.SyntheticEvent<HTMLInputElement>
+  ) => {
+    const inputToNumber = Number(e.currentTarget.value);
+    switch (e.currentTarget.id) {
+      case "block-duration-input":
+        setNewTrainingBlock({
+          ...newTrainingBlock,
+          trainingBlockWeeks: inputToNumber,
+        });
+        break;
+      case "weekly-frequency-input":
+        setNewTrainingBlock({
+          ...newTrainingBlock,
+          weeklyFrequency: inputToNumber,
+        });
+        break;
+      case "min-intensity-input":
+        setNewTrainingBlock({
+          ...newTrainingBlock,
+          minimumIntensity: inputToNumber,
+        });
+        break;
+      default:
+        console.error(
+          "something went wrong, the inputs should assigned to block duration, weekly frequency, or min intensity"
+        );
+    }
   };
 
   return (
@@ -172,6 +227,44 @@ function App() {
           />
         )}
         <button type="submit">Add New Goal</button>
+      </form>
+
+      <h3>Training Block Creation</h3>
+      <form action="" onSubmit={(e) => handleTrainingProgramSubmission(e)}>
+        <div>
+          <label htmlFor="block-duration-input">block duration: </label>
+          <input
+            id="block-duration-input"
+            value={newTrainingBlock.trainingBlockWeeks}
+            onChange={(e) => handleNewTrainingBlockInputs(e)}
+            type="number"
+            min={2}
+            max={12}
+          />
+        </div>
+        <div>
+          <label htmlFor="weekly-frequency-input">weekly frequency: </label>
+          <input
+            id="weekly-frequency-input"
+            value={newTrainingBlock.weeklyFrequency}
+            onChange={(e) => handleNewTrainingBlockInputs(e)}
+            type="number"
+            min={2}
+            max={7}
+          />
+        </div>
+        <div>
+          <label htmlFor="min-intensity-input">minimum intensity: </label>
+          <input
+            id="min-intensity-input"
+            value={newTrainingBlock.minimumIntensity}
+            onChange={(e) => handleNewTrainingBlockInputs(e)}
+            type="number"
+            min={30}
+            max={100}
+          />
+        </div>
+        <button type="submit">Create Training Block</button>
       </form>
     </>
   );
