@@ -11,6 +11,14 @@ interface TrainingBlockObj {
   minimumIntensity: number;
 }
 
+interface DayDetail {
+  [key: string]: LiftDayDetails;
+}
+
+interface LiftDayDetails {
+  lifts: Array<string>;
+}
+
 const trainingBlockPercentages = (
   trainingBlockWeeks: number,
   weeklyFrequency: number,
