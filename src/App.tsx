@@ -166,11 +166,30 @@ function App() {
   ) => {
     e.preventDefault();
 
-    trainingBlockPercentages(
+    const trainingBlockInfo = trainingBlockPercentages(
       newTrainingBlock.trainingBlockWeeks,
       newTrainingBlock.weeklyFrequency,
       newTrainingBlock.minimumIntensity
     );
+
+    console.table(expandTrainingBlockWithDays(trainingBlockInfo));
+  };
+
+  const expandTrainingBlockWithDays = (trainingBlockInfo: any) => {
+    for (let i = 0; i < trainingBlockInfo.length; i++) {
+      let workoutDaysObject: DayDetail = {};
+      for (let j = 0; j < trainingBlockInfo[i].weeklyFrequency; j++) {
+        workoutDaysObject = {
+          ...workoutDaysObject,
+          [`day${j + 1}`]: { lifts: ["exercise 1", "exercise 2"] },
+        };
+      }
+      trainingBlockInfo[i] = {
+        ...trainingBlockInfo[0],
+        ...workoutDaysObject,
+      };
+    }
+    return trainingBlockInfo;
   };
 
   const handleNewTrainingBlockInputs = (
