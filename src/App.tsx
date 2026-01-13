@@ -101,10 +101,6 @@ const trainingBlockPercentages = (
   return intensityVolumeAdjustments;
 };
 
-// find weekly schedule. distribute lifts equally across weekly frequency.
-
-// const liftDays = ();
-
 const mockLifts: LiftInfo[] = [
   {
     name: "Back Squat",
@@ -199,8 +195,10 @@ function App() {
         };
       }
       trainingBlockInfo[i] = {
-        ...trainingBlockInfo[0],
-        ...workoutDaysObject,
+        ...trainingBlockInfo[i],
+        days: {
+          ...workoutDaysObject,
+        },
       };
     }
     return trainingBlockInfo;
@@ -248,6 +246,7 @@ function App() {
           <br />
         </div>
       ))}
+
       <form action="" onSubmit={handleNewGoalSubmission}>
         <select
           name="lifts"
@@ -269,7 +268,9 @@ function App() {
         )}
         <button type="submit">Add New Goal</button>
       </form>
-
+      {program.map((week) => {
+        return <div key={week.week}>Week {week.week}</div>;
+      })}
       <h3>Training Block Creation</h3>
       <form action="" onSubmit={(e) => handleTrainingProgramSubmission(e)}>
         <div>
