@@ -19,6 +19,18 @@ interface LiftDayDetails {
   lifts: Array<string>;
 }
 
+interface ProgramDetails {
+  week: number;
+  intensityPercent: number;
+  weeklyFrequency: number;
+  setsPerSession: number;
+  repsPerSet: number;
+  totalWeeklySetsPerLift: number;
+  days: {
+    [key: string]: Array<LiftDayDetails>;
+  };
+}
+
 const trainingBlockPercentages = (
   trainingBlockWeeks: number,
   weeklyFrequency: number,
@@ -134,6 +146,7 @@ function App() {
     weeklyFrequency: 0,
     minimumIntensity: 0,
   });
+  const [program, setProgram] = useState<ProgramDetails[]>([]);
 
   const handleGoalChange = (e: React.SyntheticEvent<HTMLInputElement>) => {
     setNewGoal(Number(e.currentTarget.value));
@@ -171,8 +184,9 @@ function App() {
       newTrainingBlock.weeklyFrequency,
       newTrainingBlock.minimumIntensity
     );
-
-    console.table(expandTrainingBlockWithDays(trainingBlockInfo));
+    const newProgram = expandTrainingBlockWithDays(trainingBlockInfo);
+    console.table(newProgram);
+    setProgram([...newProgram]);
   };
 
   const expandTrainingBlockWithDays = (trainingBlockInfo: any) => {
