@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 
 interface LiftInfo {
+  id: number;
   name: string;
   personalRecord: { weightInPounds: number; reps: number; currentGoal: number };
 }
@@ -103,26 +104,32 @@ const trainingBlockPercentages = (
 
 const mockLifts: LiftInfo[] = [
   {
+    id: 1,
     name: "Back Squat",
     personalRecord: { weightInPounds: 315, reps: 5, currentGoal: 0 },
   },
   {
+    id: 2,
     name: "Bench Press",
     personalRecord: { weightInPounds: 225, reps: 3, currentGoal: 0 },
   },
   {
+    id: 3,
     name: "Deadlift",
     personalRecord: { weightInPounds: 405, reps: 1, currentGoal: 0 },
   },
   {
+    id: 4,
     name: "Overhead Press",
     personalRecord: { weightInPounds: 135, reps: 8, currentGoal: 0 },
   },
   {
+    id: 5,
     name: "Barbell Row",
     personalRecord: { weightInPounds: 185, reps: 10, currentGoal: 0 },
   },
   {
+    id: 6,
     name: "Incline Dumbbell Press",
     personalRecord: { weightInPounds: 80, reps: 12, currentGoal: 0 },
   },
@@ -130,10 +137,7 @@ const mockLifts: LiftInfo[] = [
 
 function App() {
   const [lifts, setLifts] = useState<LiftInfo[]>(mockLifts);
-  const [selectedLift, setSelectedLift] = useState<LiftInfo>({
-    name: "Back Squat",
-    personalRecord: { weightInPounds: 315, reps: 5, currentGoal: 0 },
-  });
+  const [selectedLift, setSelectedLift] = useState<LiftInfo>(lifts[0]);
   const [newGoal, setNewGoal] = useState<number>(
     selectedLift.personalRecord.weightInPounds
   );
@@ -180,6 +184,7 @@ function App() {
       newTrainingBlock.weeklyFrequency,
       newTrainingBlock.minimumIntensity
     );
+
     const newProgram = expandTrainingBlockWithDays(trainingBlockInfo);
     console.table(newProgram);
     setProgram([...newProgram]);
@@ -234,6 +239,10 @@ function App() {
     }
   };
 
+  const handleDeleteLift = (currentLift: LiftInfo) => {
+    setLifts([...lifts.filter((lift) => lift.id !== currentLift.id)]);
+  };
+
   return (
     <>
       {lifts.map((lift) => (
@@ -243,6 +252,7 @@ function App() {
             {lift.personalRecord.reps} reps - Next Goal:{" "}
             {lift.personalRecord.currentGoal}
           </span>
+          <button onClick={(e) => handleDeleteLift(lift)}>Delete</button>
           <br />
         </div>
       ))}
