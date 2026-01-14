@@ -136,17 +136,17 @@ const mockLifts: LiftInfo[] = [
 ];
 
 function App() {
-  const [lifts, setLifts] = useState<LiftInfo[]>(mockLifts);
-  const [selectedLift, setSelectedLift] = useState<LiftInfo>(lifts[0]);
-  const [newGoal, setNewGoal] = useState<number>(
-    selectedLift.personalRecord.weightInPounds
-  );
+  const [lifts, setLifts] = useState<LiftInfo[] | null>(null);
+  const [selectedLift, setSelectedLift] = useState<LiftInfo | null>(null);
+  // const [newGoal, setNewGoal] = useState<number>(
+  //   selectedLift.personalRecord.weightInPounds
+  // );
   const [newTrainingBlock, setNewTrainingBlock] = useState<TrainingBlockObj>({
     trainingBlockWeeks: 0,
     weeklyFrequency: 0,
     minimumIntensity: 0,
   });
-  const [program, setProgram] = useState<ProgramDetails[]>([]);
+  const [program, setProgram] = useState<ProgramDetails[] | null>(null);
   const [newLift, setNewLift] = useState<string>("");
 
   // const handleGoalChange = (e: React.SyntheticEvent<HTMLInputElement>) => {
@@ -241,7 +241,9 @@ function App() {
   };
 
   const handleDeleteLift = (currentLift: LiftInfo) => {
-    setLifts([...lifts.filter((lift) => lift.id !== currentLift.id)]);
+    if (lifts) {
+      setLifts([...lifts.filter((lift) => lift.id !== currentLift.id)]);
+    }
   };
 
   const handleAddLift = (e: React.SyntheticEvent<HTMLInputElement>) => {
@@ -252,41 +254,24 @@ function App() {
     e: React.SyntheticEvent<HTMLFormElement>
   ) => {
     e.preventDefault();
+    const duplicateFound = lifts?.find((lift) => lift.name === newLift);
+
+    if (duplicateFound) {
+      window.alert("That lift already exists");
+      return;
+    }
     const newLiftObject = {
-      id: lifts.length + 1,
+      id: lifts ? lifts.length + 1 : 1,
       name: newLift,
       personalRecord: { weightInPounds: 0, reps: 0, currentGoal: 0 },
     };
-    setLifts([...lifts, newLiftObject]);
+    const newLiftsArray = lifts ? [...lifts, newLiftObject] : [newLiftObject];
+    setLifts(newLiftsArray);
+    setNewLift("");
   };
 
   return (
     <>
-      {lifts.map((lift) => (
-        <div key={lift.name}>
-          <span>
-            {lift.name} : {lift.personalRecord.weightInPounds}lbs and{" "}
-            {lift.personalRecord.reps} reps - Next Goal:{" "}
-            {lift.personalRecord.currentGoal}
-          </span>
-          <button onClick={(e) => handleDeleteLift(lift)}>Delete</button>
-          <br />
-        </div>
-      ))}
-      <form onSubmit={(e) => handleAddLiftSubmission(e)}>
-        <div>
-          <label htmlFor="new-lift-text-input">Add A Lift: </label>
-          <input
-            id="new-lift-text-input"
-            value={newLift}
-            onChange={(e) => {
-              handleAddLift(e);
-            }}
-            type="text"
-          />
-        </div>
-        <button type="submit">Add</button>
-      </form>
       {/* <form action="" onSubmit={handleNewGoalSubmission}>
         <select
           name="lifts"
@@ -308,10 +293,37 @@ function App() {
         )}
         <button type="submit">Add New Goal</button>
       </form> */}
-      {program.map((week) => {
-        return <div key={week.week}>Week {week.week}</div>;
-      })}
+
       <h3>Training Block Creation</h3>
+      {lifts && lifts.length > 0 ? (
+        lifts.map((lift) => (
+          <div key={lift.name}>
+            <span>
+              {lift.name} : {lift.personalRecord.weightInPounds}lbs and{" "}
+              {lift.personalRecord.reps} reps - Next Goal:{" "}
+              {lift.personalRecord.currentGoal}
+            </span>
+            <button onClick={(e) => handleDeleteLift(lift)}>Delete</button>
+            <br />
+          </div>
+        ))
+      ) : (
+        <div>Add lifts to your program here</div>
+      )}
+      <form onSubmit={(e) => handleAddLiftSubmission(e)}>
+        <div>
+          <label htmlFor="new-lift-text-input">Add A Lift: </label>
+          <input
+            id="new-lift-text-input"
+            value={newLift}
+            onChange={(e) => {
+              handleAddLift(e);
+            }}
+            type="text"
+          />
+        </div>
+        <button type="submit">Add</button>
+      </form>
       <form action="" onSubmit={(e) => handleTrainingProgramSubmission(e)}>
         <div>
           <label htmlFor="block-duration-input">block duration: </label>
@@ -346,8 +358,21 @@ function App() {
             max={100}
           />
         </div>
-        <button type="submit">Create Training Block</button>
+        {lifts && lifts.length > 2 ? (
+          <button type="submit">Create Training Block</button>
+        ) : (
+          <div>Your program must contain atleast 3 exercises to submit</div>
+        )}
       </form>
+      {program &&
+        program.map((week) => {
+          return (
+            <div key={week.week}>
+              {" "}
+              <button> Week {week.week}</button>
+            </div>
+          );
+        })}
     </>
   );
 }
