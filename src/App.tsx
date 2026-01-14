@@ -147,32 +147,33 @@ function App() {
     minimumIntensity: 0,
   });
   const [program, setProgram] = useState<ProgramDetails[]>([]);
+  const [newLift, setNewLift] = useState<string>("");
 
-  const handleGoalChange = (e: React.SyntheticEvent<HTMLInputElement>) => {
-    setNewGoal(Number(e.currentTarget.value));
-  };
+  // const handleGoalChange = (e: React.SyntheticEvent<HTMLInputElement>) => {
+  //   setNewGoal(Number(e.currentTarget.value));
+  // };
 
-  const handleSelectedLift = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const foundLift = lifts.find((lift) => lift.name === e.currentTarget.value);
-    if (foundLift) {
-      setSelectedLift(foundLift);
-      setNewGoal(foundLift.personalRecord.weightInPounds);
-    }
-  };
+  // const handleSelectedLift = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  //   const foundLift = lifts.find((lift) => lift.name === e.currentTarget.value);
+  //   if (foundLift) {
+  //     setSelectedLift(foundLift);
+  //     setNewGoal(foundLift.personalRecord.weightInPounds);
+  //   }
+  // };
 
-  const handleNewGoalSubmission = (
-    e: React.SyntheticEvent<HTMLFormElement>
-  ) => {
-    e.preventDefault();
-    const newLiftObject: LiftInfo = {
-      ...selectedLift,
-      personalRecord: { ...selectedLift.personalRecord, currentGoal: newGoal },
-    };
-    setLifts([
-      ...lifts.filter((lift) => lift.name !== newLiftObject.name),
-      newLiftObject,
-    ]);
-  };
+  // const handleNewGoalSubmission = (
+  //   e: React.SyntheticEvent<HTMLFormElement>
+  // ) => {
+  //   e.preventDefault();
+  //   const newLiftObject: LiftInfo = {
+  //     ...selectedLift,
+  //     personalRecord: { ...selectedLift.personalRecord, currentGoal: newGoal },
+  //   };
+  //   setLifts([
+  //     ...lifts.filter((lift) => lift.name !== newLiftObject.name),
+  //     newLiftObject,
+  //   ]);
+  // };
 
   const handleTrainingProgramSubmission = (
     e: React.SyntheticEvent<HTMLFormElement>
@@ -243,6 +244,22 @@ function App() {
     setLifts([...lifts.filter((lift) => lift.id !== currentLift.id)]);
   };
 
+  const handleAddLift = (e: React.SyntheticEvent<HTMLInputElement>) => {
+    setNewLift(e.currentTarget.value);
+  };
+
+  const handleAddLiftSubmission = (
+    e: React.SyntheticEvent<HTMLFormElement>
+  ) => {
+    e.preventDefault();
+    const newLiftObject = {
+      id: lifts.length + 1,
+      name: newLift,
+      personalRecord: { weightInPounds: 0, reps: 0, currentGoal: 0 },
+    };
+    setLifts([...lifts, newLiftObject]);
+  };
+
   return (
     <>
       {lifts.map((lift) => (
@@ -256,8 +273,21 @@ function App() {
           <br />
         </div>
       ))}
-
-      <form action="" onSubmit={handleNewGoalSubmission}>
+      <form onSubmit={(e) => handleAddLiftSubmission(e)}>
+        <div>
+          <label htmlFor="new-lift-text-input">Add A Lift: </label>
+          <input
+            id="new-lift-text-input"
+            value={newLift}
+            onChange={(e) => {
+              handleAddLift(e);
+            }}
+            type="text"
+          />
+        </div>
+        <button type="submit">Add</button>
+      </form>
+      {/* <form action="" onSubmit={handleNewGoalSubmission}>
         <select
           name="lifts"
           id="lifts"
@@ -277,7 +307,7 @@ function App() {
           />
         )}
         <button type="submit">Add New Goal</button>
-      </form>
+      </form> */}
       {program.map((week) => {
         return <div key={week.week}>Week {week.week}</div>;
       })}
