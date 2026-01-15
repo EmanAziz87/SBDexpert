@@ -136,7 +136,7 @@ const mockLifts: LiftInfo[] = [
 ];
 
 function App() {
-  const [lifts, setLifts] = useState<LiftInfo[] | null>(null);
+  const [lifts, setLifts] = useState<LiftInfo[] | null>(mockLifts);
   const [selectedLift, setSelectedLift] = useState<LiftInfo | null>(null);
   // const [newGoal, setNewGoal] = useState<number>(
   //   selectedLift.personalRecord.weightInPounds
@@ -148,6 +148,7 @@ function App() {
   });
   const [program, setProgram] = useState<ProgramDetails[] | null>(null);
   const [newLift, setNewLift] = useState<string>("");
+  const [selectedWeek, setSelectedWeek] = useState<ProgramDetails | null>(null);
 
   // const handleGoalChange = (e: React.SyntheticEvent<HTMLInputElement>) => {
   //   setNewGoal(Number(e.currentTarget.value));
@@ -189,6 +190,7 @@ function App() {
     const newProgram = expandTrainingBlockWithDays(trainingBlockInfo);
     console.table(newProgram);
     setProgram([...newProgram]);
+    setSelectedWeek(newProgram[0]);
   };
 
   const expandTrainingBlockWithDays = (trainingBlockInfo: any) => {
@@ -268,6 +270,15 @@ function App() {
     const newLiftsArray = lifts ? [...lifts, newLiftObject] : [newLiftObject];
     setLifts(newLiftsArray);
     setNewLift("");
+  };
+
+  const handleShowWeek = (week: ProgramDetails) => {
+    const foundWeek = program?.find((wk) => wk.week === week.week);
+    if (foundWeek) {
+      setSelectedWeek(foundWeek);
+    } else {
+      console.error("Week not found!");
+    }
   };
 
   return (
@@ -369,10 +380,27 @@ function App() {
           return (
             <div key={week.week}>
               {" "}
-              <button> Week {week.week}</button>
+              <button onClick={(e) => handleShowWeek(week)}>
+                {" "}
+                Week {week.week}
+              </button>
             </div>
           );
         })}
+      {selectedWeek && (
+        <div>
+          {Object.keys(selectedWeek.days).map((day) => (
+            <div key={day}>{day}</div>
+          ))}
+          <div>{selectedWeek.week}</div>
+          <div>{selectedWeek.intensityPercent}</div>
+          <div>{selectedWeek.weeklyFrequency}</div>
+          <div>{selectedWeek.setsPerSession}</div>
+          <div>{selectedWeek.repsPerSet}</div>
+          <div>{selectedWeek.totalWeeklySetsPerLift}</div>
+        </div>
+      )}
+      <button>Finalize</button>
     </>
   );
 }
