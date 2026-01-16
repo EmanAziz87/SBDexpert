@@ -302,6 +302,34 @@ function App() {
     newDayLiftsArray[weekIndex][dayIndex] = e.currentTarget.value;
     setDayLiftsForWeeks(newDayLiftsArray);
     console.log("Lifts For Days: ", dayLiftsForWeeks);
+    console.log("Program: ", program);
+  };
+
+  const handleAddLiftToDaySubmission = (
+    e: React.SyntheticEvent<HTMLFormElement>
+  ) => {
+    e.preventDefault();
+    if (!program) {
+      return console.error("program is null");
+    }
+
+    const newProgramObject: Array<ProgramDetails> = [...program];
+
+    for (let i = 0; i < dayLiftsForWeeks.length; i++) {
+      for (let j = 0; j < dayLiftsForWeeks[i].length; j++) {
+        if (dayLiftsForWeeks[i][j].length === 0) continue;
+        newProgramObject[i].days[`day${j + 1}`].lifts = [
+          ...newProgramObject[i].days[`day${j + 1}`].lifts,
+        ];
+        newProgramObject[i].days[`day${j + 1}`].lifts.push(
+          dayLiftsForWeeks[i][j]
+        );
+      }
+    }
+    console.log("Program with added lifts: ", newProgramObject);
+    setProgram(newProgramObject);
+    setSelectedWeek(newProgramObject[0]);
+    setStateForLiftsOfEachDay(newProgramObject);
   };
 
   return (
@@ -417,14 +445,18 @@ function App() {
           <div>Total Sets For Week: {selectedWeek.totalWeeklySetsPerLift}</div>
           {Object.keys(selectedWeek.days).map((day, index) => {
             return (
-              <div>
+              <div key={day}>
                 <span key={day}>{day} </span>
                 {selectedWeek.days[day].lifts.map((lift, index) => (
-                  <div>
+                  <div key={index}>
                     <div>{lift}</div>
                   </div>
                 ))}
-                <form action="">
+                <form
+                  id="add-lifts-form"
+                  action=""
+                  onSubmit={(e) => handleAddLiftToDaySubmission(e)}
+                >
                   <div>
                     <label htmlFor="lift-day-input">Add Lift</label>
                     <input
@@ -440,6 +472,9 @@ function App() {
               </div>
             );
           })}
+          <button form="add-lifts-form" type="submit">
+            Add Lifts
+          </button>
         </div>
       )}
       <br />
