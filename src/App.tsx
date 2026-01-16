@@ -3,7 +3,6 @@ import React, { useState } from "react";
 interface LiftInfo {
   id: number;
   name: string;
-  personalRecord: { weightInPounds: number; reps: number; currentGoal: number };
 }
 
 interface TrainingBlockObj {
@@ -106,32 +105,26 @@ const mockLifts: LiftInfo[] = [
   {
     id: 1,
     name: "Back Squat",
-    personalRecord: { weightInPounds: 315, reps: 5, currentGoal: 0 },
   },
   {
     id: 2,
     name: "Bench Press",
-    personalRecord: { weightInPounds: 225, reps: 3, currentGoal: 0 },
   },
   {
     id: 3,
     name: "Deadlift",
-    personalRecord: { weightInPounds: 405, reps: 1, currentGoal: 0 },
   },
   {
     id: 4,
     name: "Overhead Press",
-    personalRecord: { weightInPounds: 135, reps: 8, currentGoal: 0 },
   },
   {
     id: 5,
     name: "Barbell Row",
-    personalRecord: { weightInPounds: 185, reps: 10, currentGoal: 0 },
   },
   {
     id: 6,
     name: "Incline Dumbbell Press",
-    personalRecord: { weightInPounds: 80, reps: 12, currentGoal: 0 },
   },
 ];
 
@@ -339,11 +332,7 @@ function App() {
       {lifts && lifts.length > 0 ? (
         lifts.map((lift) => (
           <div key={lift.name}>
-            <span>
-              {lift.name} : {lift.personalRecord.weightInPounds}lbs and{" "}
-              {lift.personalRecord.reps} reps - Next Goal:{" "}
-              {lift.personalRecord.currentGoal}
-            </span>
+            <span>{lift.name}</span>
             <button onClick={(e) => handleDeleteLift(lift)}>Delete</button>
             <br />
           </div>
