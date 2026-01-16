@@ -149,6 +149,9 @@ function App() {
   const [program, setProgram] = useState<ProgramDetails[] | null>(null);
   const [newLift, setNewLift] = useState<string>("");
   const [selectedWeek, setSelectedWeek] = useState<ProgramDetails | null>(null);
+  const [dayLiftsForWeeks, setDayLiftsForWeeks] = useState<
+    Array<Array<string>>
+  >([]);
 
   // const handleGoalChange = (e: React.SyntheticEvent<HTMLInputElement>) => {
   //   setNewGoal(Number(e.currentTarget.value));
@@ -187,10 +190,12 @@ function App() {
       newTrainingBlock.minimumIntensity
     );
 
-    const newProgram = expandTrainingBlockWithDays(trainingBlockInfo);
+    const newProgram: Array<ProgramDetails> =
+      expandTrainingBlockWithDays(trainingBlockInfo);
     console.table(newProgram);
     setProgram([...newProgram]);
     setSelectedWeek(newProgram[0]);
+    setStateForLiftsOfEachDay(newProgram);
   };
 
   const expandTrainingBlockWithDays = (trainingBlockInfo: any) => {
@@ -210,6 +215,19 @@ function App() {
       };
     }
     return trainingBlockInfo;
+  };
+
+  const setStateForLiftsOfEachDay = (program: Array<ProgramDetails>) => {
+    const dayLiftsForWeeksTemp = [];
+    for (const week of program) {
+      const workoutDays = [];
+      for (const _days of Object.keys(week.days)) {
+        workoutDays.push("");
+      }
+      dayLiftsForWeeksTemp.push(workoutDays);
+    }
+
+    setDayLiftsForWeeks(dayLiftsForWeeksTemp);
   };
 
   const handleNewTrainingBlockInputs = (
@@ -279,6 +297,18 @@ function App() {
     } else {
       console.error("Week not found!");
     }
+  };
+
+  const handleAddLiftToDay = (
+    e: React.SyntheticEvent<HTMLInputElement>,
+    weekIndex: number,
+    dayIndex: number
+  ) => {
+    const newDayLiftsArray = [...dayLiftsForWeeks];
+    newDayLiftsArray[weekIndex] = [...newDayLiftsArray[weekIndex]];
+    newDayLiftsArray[weekIndex][dayIndex] = e.currentTarget.value;
+    setDayLiftsForWeeks(newDayLiftsArray);
+    console.log("Lifts For Days: ", dayLiftsForWeeks);
   };
 
   return (
@@ -387,19 +417,43 @@ function App() {
             </div>
           );
         })}
+      <br />
       {selectedWeek && (
         <div>
-          {Object.keys(selectedWeek.days).map((day) => (
-            <div key={day}>{day}</div>
-          ))}
-          <div>{selectedWeek.week}</div>
-          <div>{selectedWeek.intensityPercent}</div>
-          <div>{selectedWeek.weeklyFrequency}</div>
-          <div>{selectedWeek.setsPerSession}</div>
-          <div>{selectedWeek.repsPerSet}</div>
-          <div>{selectedWeek.totalWeeklySetsPerLift}</div>
+          <div>Week {selectedWeek.week}</div>
+          <div>Intensity of 1RM: {selectedWeek.intensityPercent}%</div>
+          <div>Weekly Frequency: {selectedWeek.weeklyFrequency}</div>
+          <div>Sets Per Session{selectedWeek.setsPerSession}</div>
+          <div>Reps Per Set: {selectedWeek.repsPerSet}</div>
+          <div>Total Sets For Week: {selectedWeek.totalWeeklySetsPerLift}</div>
+          {Object.keys(selectedWeek.days).map((day, index) => {
+            return (
+              <div>
+                <span key={day}>{day} </span>
+                {selectedWeek.days[day].lifts.map((lift, index) => (
+                  <div>
+                    <div>{lift}</div>
+                  </div>
+                ))}
+                <form action="">
+                  <div>
+                    <label htmlFor="lift-day-input">Add Lift</label>
+                    <input
+                      id="lift-day-input"
+                      type="text"
+                      value={dayLiftsForWeeks[selectedWeek.week - 1][index]}
+                      onChange={(e) =>
+                        handleAddLiftToDay(e, selectedWeek.week - 1, index)
+                      }
+                    />
+                  </div>
+                </form>
+              </div>
+            );
+          })}
         </div>
       )}
+      <br />
       <button>Finalize</button>
     </>
   );
