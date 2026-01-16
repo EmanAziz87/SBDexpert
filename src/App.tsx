@@ -27,7 +27,7 @@ interface ProgramDetails {
   repsPerSet: number;
   totalWeeklySetsPerLift: number;
   days: {
-    [key: string]: Array<LiftDayDetails>;
+    [key: string]: LiftDayDetails;
   };
 }
 
