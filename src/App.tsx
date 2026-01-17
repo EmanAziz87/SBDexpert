@@ -143,8 +143,9 @@ function App() {
   const [newLift, setNewLift] = useState<string>("");
   const [selectedWeek, setSelectedWeek] = useState<ProgramDetails | null>(null);
   const [dayLiftsForWeeks, setDayLiftsForWeeks] = useState<
-    Array<Array<string>>
-  >([]);
+    Array<Array<Array<string>>>
+  >([[[]]]);
+  const [moreLiftInputs, setMoreLiftInputs] = useState<Array<string>>([""]);
 
   // const handleGoalChange = (e: React.SyntheticEvent<HTMLInputElement>) => {
   //   setNewGoal(Number(e.currentTarget.value));
@@ -197,7 +198,7 @@ function App() {
       for (let j = 0; j < trainingBlockInfo[i].weeklyFrequency; j++) {
         workoutDaysObject = {
           ...workoutDaysObject,
-          [`day${j + 1}`]: { lifts: ["exercise 1", "exercise 2"] },
+          [`day${j + 1}`]: { lifts: [] },
         };
       }
       trainingBlockInfo[i] = {
@@ -215,11 +216,11 @@ function App() {
     for (const week of program) {
       const workoutDays = [];
       for (const _days of Object.keys(week.days)) {
-        workoutDays.push("");
+        workoutDays.push([]);
       }
       dayLiftsForWeeksTemp.push(workoutDays);
     }
-
+    console.log("IS THIS A TRIPLE NESTED ARRAY:?", dayLiftsForWeeksTemp);
     setDayLiftsForWeeks(dayLiftsForWeeksTemp);
   };
 
@@ -295,13 +296,20 @@ function App() {
   const handleAddLiftToDay = (
     e: React.SyntheticEvent<HTMLInputElement>,
     weekIndex: number,
-    dayIndex: number
+    dayIndex: number,
+    liftIndex: number
   ) => {
     const newDayLiftsArray = [...dayLiftsForWeeks];
     newDayLiftsArray[weekIndex] = [...newDayLiftsArray[weekIndex]];
-    newDayLiftsArray[weekIndex][dayIndex] = e.currentTarget.value;
+    newDayLiftsArray[weekIndex][dayIndex] = [
+      ...newDayLiftsArray[weekIndex][dayIndex],
+    ];
+    newDayLiftsArray[weekIndex][dayIndex][liftIndex] = e.currentTarget.value;
     setDayLiftsForWeeks(newDayLiftsArray);
-    console.log("Lifts For Days: ", dayLiftsForWeeks);
+    console.log(
+      "Lifts For Days (should be triple nested array): ",
+      dayLiftsForWeeks
+    );
     console.log("Program: ", program);
   };
 
@@ -316,14 +324,18 @@ function App() {
     const newProgramObject: Array<ProgramDetails> = [...program];
 
     for (let i = 0; i < dayLiftsForWeeks.length; i++) {
+      newProgramObject[i] = { ...newProgramObject[i] };
+
+      newProgramObject[i].days = { ...newProgramObject[i].days };
+
       for (let j = 0; j < dayLiftsForWeeks[i].length; j++) {
         if (dayLiftsForWeeks[i][j].length === 0) continue;
-        newProgramObject[i].days[`day${j + 1}`].lifts = [
-          ...newProgramObject[i].days[`day${j + 1}`].lifts,
-        ];
-        newProgramObject[i].days[`day${j + 1}`].lifts.push(
-          dayLiftsForWeeks[i][j]
-        );
+        const dayKey = `day${j + 1}`;
+
+        newProgramObject[i].days[dayKey] = {
+          ...newProgramObject[i].days[dayKey],
+          lifts: dayLiftsForWeeks[i][j],
+        };
       }
     }
     console.log("Program with added lifts: ", newProgramObject);
@@ -457,17 +469,32 @@ function App() {
                   action=""
                   onSubmit={(e) => handleAddLiftToDaySubmission(e)}
                 >
-                  <div>
-                    <label htmlFor="lift-day-input">Add Lift</label>
-                    <input
-                      id="lift-day-input"
-                      type="text"
-                      value={dayLiftsForWeeks[selectedWeek.week - 1][index]}
-                      onChange={(e) =>
-                        handleAddLiftToDay(e, selectedWeek.week - 1, index)
-                      }
-                    />
-                  </div>
+                  {moreLiftInputs &&
+                    moreLiftInputs.map((_, liftIndex) => {
+                      // ********Add lift input. nested 3d array for this
+                      return (
+                        <div key={liftIndex}>
+                          <label htmlFor="lift-day-input">Add Lift</label>
+                          <input
+                            id="lift-day-input"
+                            type="text"
+                            value={
+                              dayLiftsForWeeks[selectedWeek.week - 1]?.[
+                                index
+                              ]?.[liftIndex] ?? ""
+                            }
+                            onChange={(e) =>
+                              handleAddLiftToDay(
+                                e,
+                                selectedWeek.week - 1,
+                                index,
+                                liftIndex
+                              )
+                            }
+                          />
+                        </div>
+                      );
+                    })}
                 </form>
               </div>
             );
