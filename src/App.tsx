@@ -296,15 +296,14 @@ function App() {
   const handleAddLiftToDay = (
     e: React.SyntheticEvent<HTMLInputElement>,
     weekIndex: number,
-    dayIndex: number,
-    liftIndex: number
+    dayIndex: number
   ) => {
     const newDayLiftsArray = [...dayLiftsForWeeks];
     newDayLiftsArray[weekIndex] = [...newDayLiftsArray[weekIndex]];
     newDayLiftsArray[weekIndex][dayIndex] = [
       ...newDayLiftsArray[weekIndex][dayIndex],
     ];
-    newDayLiftsArray[weekIndex][dayIndex][liftIndex] = e.currentTarget.value;
+    newDayLiftsArray[weekIndex][dayIndex].push(e.currentTarget.value);
     setDayLiftsForWeeks(newDayLiftsArray);
     console.log(
       "Lifts For Days (should be triple nested array): ",
@@ -314,7 +313,8 @@ function App() {
   };
 
   const handleAddLiftToDaySubmission = (
-    e: React.SyntheticEvent<HTMLFormElement>
+    e: React.SyntheticEvent<HTMLFormElement>,
+    weekIndex: number
   ) => {
     e.preventDefault();
     if (!program) {
@@ -329,18 +329,23 @@ function App() {
       newProgramObject[i].days = { ...newProgramObject[i].days };
 
       for (let j = 0; j < dayLiftsForWeeks[i].length; j++) {
-        if (dayLiftsForWeeks[i][j].length === 0) continue;
+        if (dayLiftsForWeeks[i][j].length === 0) {
+          continue;
+        }
         const dayKey = `day${j + 1}`;
 
         newProgramObject[i].days[dayKey] = {
           ...newProgramObject[i].days[dayKey],
-          lifts: dayLiftsForWeeks[i][j],
+          lifts: [
+            ...dayLiftsForWeeks[i][j],
+            ...newProgramObject[i].days[dayKey].lifts,
+          ],
         };
       }
     }
     console.log("Program with added lifts: ", newProgramObject);
     setProgram(newProgramObject);
-    setSelectedWeek(newProgramObject[0]);
+    setSelectedWeek(newProgramObject[weekIndex]);
     setStateForLiftsOfEachDay(newProgramObject);
   };
 
@@ -467,34 +472,21 @@ function App() {
                 <form
                   id="add-lifts-form"
                   action=""
-                  onSubmit={(e) => handleAddLiftToDaySubmission(e)}
+                  onSubmit={(e) =>
+                    handleAddLiftToDaySubmission(e, selectedWeek.week - 1)
+                  }
                 >
-                  {moreLiftInputs &&
-                    moreLiftInputs.map((_, liftIndex) => {
-                      // ********Add lift input. nested 3d array for this
-                      return (
-                        <div key={liftIndex}>
-                          <label htmlFor="lift-day-input">Add Lift</label>
-                          <input
-                            id="lift-day-input"
-                            type="text"
-                            value={
-                              dayLiftsForWeeks[selectedWeek.week - 1]?.[
-                                index
-                              ]?.[liftIndex] ?? ""
-                            }
-                            onChange={(e) =>
-                              handleAddLiftToDay(
-                                e,
-                                selectedWeek.week - 1,
-                                index,
-                                liftIndex
-                              )
-                            }
-                          />
-                        </div>
-                      );
-                    })}
+                  <div key={index}>
+                    <label htmlFor="lift-day-input">Add Lift</label>
+                    <input
+                      id="lift-day-input"
+                      type="text"
+                      value={dayLiftsForWeeks[selectedWeek.week - 1]?.[index]}
+                      onChange={(e) =>
+                        handleAddLiftToDay(e, selectedWeek.week - 1, index)
+                      }
+                    />
+                  </div>
                 </form>
               </div>
             );
