@@ -1,8 +1,15 @@
 import React, { useState } from "react";
 
+// CONVERT ALL PROGRAM STORAGE
+interface SetInfo {
+  reps: number;
+  weight: number;
+}
+
 interface LiftInfo {
   id: number;
   name: string;
+  volume: Array<SetInfo>;
 }
 
 interface TrainingBlockObj {
@@ -105,26 +112,17 @@ const mockLifts: LiftInfo[] = [
   {
     id: 1,
     name: "Back Squat",
+    volume: [{ reps: 8, weight: 225 }],
   },
   {
     id: 2,
-    name: "Bench Press",
+    name: "Back Squat",
+    volume: [{ reps: 8, weight: 225 }],
   },
   {
     id: 3,
-    name: "Deadlift",
-  },
-  {
-    id: 4,
-    name: "Overhead Press",
-  },
-  {
-    id: 5,
-    name: "Barbell Row",
-  },
-  {
-    id: 6,
-    name: "Incline Dumbbell Press",
+    name: "Back Squat",
+    volume: [{ reps: 8, weight: 225 }],
   },
 ];
 
@@ -276,7 +274,7 @@ function App() {
     const newLiftObject = {
       id: lifts ? lifts.length + 1 : 1,
       name: newLift,
-      personalRecord: { weightInPounds: 0, reps: 0, currentGoal: 0 },
+      volume: [{ reps: 8, weight: 300 }],
     };
     const newLiftsArray = lifts ? [...lifts, newLiftObject] : [newLiftObject];
     setLifts(newLiftsArray);
