@@ -38,6 +38,12 @@ interface ProgramDetails {
   };
 }
 
+interface AdditionalInputs {
+  [key: string]: {
+    [key: string]: Array<string>;
+  };
+}
+
 const trainingBlockPercentages = (
   trainingBlockWeeks: number,
   weeklyFrequency: number,
@@ -143,6 +149,8 @@ function App() {
   const [dayLiftsForWeeks, setDayLiftsForWeeks] = useState<
     Array<Array<Array<string>>>
   >([[[]]]);
+  const [additionalLiftInputs, setAdditionalLiftInputs] =
+    useState<AdditionalInputs | null>(null);
 
   // const handleGoalChange = (e: React.SyntheticEvent<HTMLInputElement>) => {
   //   setNewGoal(Number(e.currentTarget.value));
