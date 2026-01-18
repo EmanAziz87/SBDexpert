@@ -379,6 +379,22 @@ function App() {
     setProgram(newProgramObject);
     setSelectedWeek(newProgramObject[weekIndex]);
     setStateForLiftsOfEachDay(newProgramObject);
+    defaultAdditionalLiftInputs(newProgramObject);
+  };
+
+  const addAdditionalInput = (week: number, dayKey: string) => {
+    if (!additionalLiftInputs)
+      return console.error("additionalLiftInputs is null");
+    const weekKey = `week${week}`;
+    const tempAdditionalInputObj = {
+      ...additionalLiftInputs,
+      [weekKey]: {
+        ...additionalLiftInputs[weekKey],
+        [dayKey]: [...additionalLiftInputs[weekKey][dayKey], ""],
+      },
+    };
+    console.log("DID WE ADD ADDITIONAL INPUTS??", tempAdditionalInputObj);
+    setAdditionalLiftInputs(tempAdditionalInputObj);
   };
 
   return (
@@ -508,17 +524,44 @@ function App() {
                     handleAddLiftToDaySubmission(e, selectedWeek.week - 1)
                   }
                 >
-                  <div key={index}>
-                    <label htmlFor="lift-day-input">Add Lift</label>
-                    <input
-                      id="lift-day-input"
-                      type="text"
-                      value={dayLiftsForWeeks[selectedWeek.week - 1]?.[index]}
-                      onChange={(e) =>
-                        handleAddLiftToDay(e, selectedWeek.week - 1, index)
-                      }
-                    />
-                  </div>
+                  {additionalLiftInputs &&
+                    Object.keys(
+                      additionalLiftInputs[`week${selectedWeek.week}`]
+                    ).map((currDay) => {
+                      return currDay === day
+                        ? additionalLiftInputs[`week${selectedWeek.week}`][
+                            currDay
+                          ].map((_, liftIndex) => (
+                            <div key={liftIndex}>
+                              <label htmlFor="lift-day-input">Add Lift</label>
+                              <input
+                                id="lift-day-input"
+                                type="text"
+                                value={
+                                  dayLiftsForWeeks[selectedWeek.week - 1]?.[
+                                    index
+                                  ]?.[liftIndex] ?? ""
+                                }
+                                onChange={(e) =>
+                                  handleAddLiftToDay(
+                                    e,
+                                    selectedWeek.week - 1,
+                                    index,
+                                    liftIndex
+                                  )
+                                }
+                              />
+                            </div>
+                          ))
+                        : "";
+                    })}
+
+                  <button
+                    type="button"
+                    onClick={() => addAdditionalInput(selectedWeek.week, day)}
+                  >
+                    Another Lift
+                  </button>
                 </form>
               </div>
             );
