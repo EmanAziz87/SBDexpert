@@ -195,6 +195,28 @@ function App() {
     setProgram([...newProgram]);
     setSelectedWeek(newProgram[0]);
     setStateForLiftsOfEachDay(newProgram);
+    defaultAdditionalLiftInputs(newProgram);
+  };
+
+  const defaultAdditionalLiftInputs = (newProgram: Array<ProgramDetails>) => {
+    let newAdditionalInputsObj: AdditionalInputs = {};
+    for (const week of newProgram) {
+      const weekKey = `week${week.week}`;
+
+      for (const days of Object.keys(week.days)) {
+        const dayKey = days;
+
+        newAdditionalInputsObj = {
+          ...newAdditionalInputsObj,
+          [weekKey]: {
+            ...newAdditionalInputsObj[weekKey],
+            [dayKey]: [""],
+          },
+        };
+      }
+    }
+    console.log("additional Lift inputs: ", newAdditionalInputsObj);
+    setAdditionalLiftInputs(newAdditionalInputsObj);
   };
 
   const expandTrainingBlockWithDays = (trainingBlockInfo: any) => {
@@ -301,21 +323,17 @@ function App() {
   const handleAddLiftToDay = (
     e: React.SyntheticEvent<HTMLInputElement>,
     weekIndex: number,
-    dayIndex: number
+    dayIndex: number,
+    liftIndex: number
   ) => {
+    if (!e.currentTarget.value) return console.error("input is undefined");
     const newDayLiftsArray = [...dayLiftsForWeeks];
     newDayLiftsArray[weekIndex] = [...newDayLiftsArray[weekIndex]];
     newDayLiftsArray[weekIndex][dayIndex] = [
       ...newDayLiftsArray[weekIndex][dayIndex],
     ];
 
-    [[[], []], []];
-
-    // problematic code: pushing entire current input value on top of what already stored.
-    // the goal shoul be to replace the array with the current value.
-    // using hardcoded 0 for the index allows us to completely replace that lifts string
-    // with the current value. figure out how to do that for each input dynamically!!!
-    newDayLiftsArray[weekIndex][dayIndex][0] = e.currentTarget.value;
+    newDayLiftsArray[weekIndex][dayIndex][liftIndex] = e.currentTarget.value;
     setDayLiftsForWeeks(newDayLiftsArray);
     console.log(
       "Lifts For Days (should be triple nested array): ",
@@ -345,11 +363,13 @@ function App() {
           continue;
         }
         const dayKey = `day${j + 1}`;
-
+        const removedUndefinedValuesLifts = dayLiftsForWeeks[i][j].filter(
+          (lift) => lift !== undefined
+        );
         newProgramObject[i].days[dayKey] = {
           ...newProgramObject[i].days[dayKey],
           lifts: [
-            ...dayLiftsForWeeks[i][j],
+            ...removedUndefinedValuesLifts,
             ...newProgramObject[i].days[dayKey].lifts,
           ],
         };
