@@ -145,7 +145,6 @@ function App() {
   const [dayLiftsForWeeks, setDayLiftsForWeeks] = useState<
     Array<Array<Array<string>>>
   >([[[]]]);
-  const [moreLiftInputs, setMoreLiftInputs] = useState<Array<string>>([""]);
 
   // const handleGoalChange = (e: React.SyntheticEvent<HTMLInputElement>) => {
   //   setNewGoal(Number(e.currentTarget.value));
@@ -303,7 +302,14 @@ function App() {
     newDayLiftsArray[weekIndex][dayIndex] = [
       ...newDayLiftsArray[weekIndex][dayIndex],
     ];
-    newDayLiftsArray[weekIndex][dayIndex].push(e.currentTarget.value);
+
+    [[[], []], []];
+
+    // problematic code: pushing entire current input value on top of what already stored.
+    // the goal shoul be to replace the array with the current value.
+    // using hardcoded 0 for the index allows us to completely replace that lifts string
+    // with the current value. figure out how to do that for each input dynamically!!!
+    newDayLiftsArray[weekIndex][dayIndex][0] = e.currentTarget.value;
     setDayLiftsForWeeks(newDayLiftsArray);
     console.log(
       "Lifts For Days (should be triple nested array): ",
@@ -376,7 +382,7 @@ function App() {
       <h3>Training Block Creation</h3>
       {lifts && lifts.length > 0 ? (
         lifts.map((lift) => (
-          <div key={lift.name}>
+          <div key={lift.id}>
             <span>{lift.name}</span>
             <button onClick={(e) => handleDeleteLift(lift)}>Delete</button>
             <br />
