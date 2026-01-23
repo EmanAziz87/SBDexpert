@@ -10,11 +10,6 @@ interface LiftInfo {
   weight: number;
 }
 
-interface TrainingBlockObj {
-  trainingBlockWeeks: number;
-  weeklyFrequency: number;
-}
-
 interface DayDetail {
   [key: string]: LiftDayDetails;
 }
@@ -36,38 +31,11 @@ interface AdditionalInputs {
   };
 }
 
-const mockLifts: LiftInfo[] = [
-  {
-    id: 1,
-    name: "Back Squat",
-    sets: 5,
-    reps: 5,
-    weight: 225,
-  },
-  {
-    id: 2,
-    name: "Back Squat",
-    sets: 5,
-    reps: 5,
-    weight: 275,
-  },
-  {
-    id: 3,
-    name: "Back Squat",
-    sets: 5,
-    reps: 5,
-    weight: 315,
-  },
-];
-
 function App() {
-  const [lifts, setLifts] = useState<LiftInfo[] | null>(mockLifts);
-  const [newTrainingBlock, setNewTrainingBlock] = useState<TrainingBlockObj>({
-    trainingBlockWeeks: 0,
-    weeklyFrequency: 0,
-  });
   const [program, setProgram] = useState<ProgramDetails[] | null>(null);
-  const [newLift, setNewLift] = useState<string>("");
+  const [newProgramWeeks, setNewProgramWeeks] = useState<number>(0);
+  const [newProgramWeeklyFrequency, setNewProgramWeeklyFrequency] =
+    useState<number>(0);
   const [selectedWeek, setSelectedWeek] = useState<ProgramDetails | null>(null);
   const [dayLiftsForWeeks, setDayLiftsForWeeks] = useState<
     Array<Array<Array<string>>>
@@ -82,23 +50,28 @@ function App() {
 
     const trainingBlockInfo = [];
 
-    for (let i = 0; i < newTrainingBlock.trainingBlockWeeks; i++) {
-      trainingBlockInfo.push({
+    for (let i = 0; i < newProgramWeeks; i++) {
+      trainingBlockInfo[i] = {
         week: i + 1,
-        weeklyFrequency: newTrainingBlock.weeklyFrequency,
-      });
+        weeklyFrequency: newProgramWeeklyFrequency,
+      };
     }
-
+    // expand training block with days in the backend.
     const newProgram: Array<ProgramDetails> =
-      expandTrainingBlockWithDays(trainingBlockInfo);
+      createWorkoutProgramScaffolding(trainingBlockInfo);
     console.table(newProgram);
+    // set the program in the backend and send it back. make sure the backend call is async/await, we want
+    // this line to freeze and load the backend before proceeding.
     setProgram([...newProgram]);
     setSelectedWeek(newProgram[0]);
     setStateForLiftsOfEachDay(newProgram);
-    defaultAdditionalLiftInputs(newProgram);
+    dynamicFormInputStateScaffolding(newProgram);
   };
 
-  const defaultAdditionalLiftInputs = (newProgram: Array<ProgramDetails>) => {
+  // Progam Purpose: week count
+  const dynamicFormInputStateScaffolding = (
+    newProgram: Array<ProgramDetails>,
+  ) => {
     let newAdditionalInputsObj: AdditionalInputs = {};
     for (const week of newProgram) {
       const weekKey = `week${week.week}`;
@@ -118,7 +91,8 @@ function App() {
     setAdditionalLiftInputs(newAdditionalInputsObj);
   };
 
-  const expandTrainingBlockWithDays = (trainingBlockInfo: any) => {
+  // this is putting together our program. This should be the backends job.
+  const createWorkoutProgramScaffolding = (trainingBlockInfo: any) => {
     for (let i = 0; i < trainingBlockInfo.length; i++) {
       let workoutDaysObject: DayDetail = {};
       for (let j = 0; j < trainingBlockInfo[i].weeklyFrequency; j++) {
@@ -146,64 +120,25 @@ function App() {
       }
       dayLiftsForWeeksTemp.push(workoutDays);
     }
-    console.log("IS THIS A TRIPLE NESTED ARRAY:?", dayLiftsForWeeksTemp);
     setDayLiftsForWeeks(dayLiftsForWeeksTemp);
   };
 
   const handleNewTrainingBlockInputs = (
-    e: React.SyntheticEvent<HTMLInputElement>
+    e: React.SyntheticEvent<HTMLInputElement>,
   ) => {
     const inputToNumber = Number(e.currentTarget.value);
     switch (e.currentTarget.id) {
       case "block-duration-input":
-        setNewTrainingBlock({
-          ...newTrainingBlock,
-          trainingBlockWeeks: inputToNumber,
-        });
+        setNewProgramWeeks(inputToNumber);
         break;
       case "weekly-frequency-input":
-        setNewTrainingBlock({
-          ...newTrainingBlock,
-          weeklyFrequency: inputToNumber,
-        });
+        setNewProgramWeeklyFrequency(inputToNumber);
         break;
       default:
         console.error(
           "something went wrong, the inputs should assigned to block duration, weekly frequency, or min intensity",
         );
     }
-  };
-
-  const handleDeleteLift = (currentLift: LiftInfo) => {
-    if (lifts) {
-      setLifts([...lifts.filter((lift) => lift.id !== currentLift.id)]);
-    }
-  };
-
-  const handleAddLift = (e: React.SyntheticEvent<HTMLInputElement>) => {
-    setNewLift(e.currentTarget.value);
-  };
-
-  const handleAddLiftSubmission = (
-    e: React.SyntheticEvent<HTMLFormElement>
-  ) => {
-    e.preventDefault();
-    const duplicateFound = lifts?.find((lift) => lift.name === newLift);
-
-    if (duplicateFound) {
-      window.alert("That lift already exists");
-      return;
-    }
-    const newLiftObject = {
-      id: lifts ? lifts.length + 1 : 1,
-      name: newLift,
-      sets: 0,
-      reps: 0,
-      weight: 0,
-    };
-    const newLiftsArray = lifts ? [...lifts, newLiftObject] : [newLiftObject];
-    setLifts(newLiftsArray);
-    setNewLift("");
   };
 
   const handleShowWeek = (week: ProgramDetails) => {
@@ -215,13 +150,12 @@ function App() {
     }
   };
 
-  const handleAddLiftToDay = (
+  const addLiftInfoToDay = (
     e: React.SyntheticEvent<HTMLInputElement>,
     weekIndex: number,
     dayIndex: number,
-    liftIndex: number
+    liftIndex: number,
   ) => {
-    if (!e.currentTarget.value) return console.error("input is undefined");
     const newDayLiftsArray = [...dayLiftsForWeeks];
     newDayLiftsArray[weekIndex] = [...newDayLiftsArray[weekIndex]];
     newDayLiftsArray[weekIndex][dayIndex] = [
@@ -230,16 +164,27 @@ function App() {
 
     newDayLiftsArray[weekIndex][dayIndex][liftIndex] = e.currentTarget.value;
     setDayLiftsForWeeks(newDayLiftsArray);
-    console.log(
-      "Lifts For Days (should be triple nested array): ",
-      dayLiftsForWeeks
-    );
     console.log("Program: ", program);
+  };
+
+  const handleCheckInfoTypeToAdd = (
+    e: React.SyntheticEvent<HTMLInputElement>,
+    weekIndex: number,
+    dayIndex: number,
+    liftIndex: number,
+  ) => {
+    if (!e.currentTarget.value) return console.error("input is undefined");
+    if (e.currentTarget.id === "lift-input") {
+      addLiftInfoToDay(e, weekIndex, dayIndex, liftIndex);
+    } else if (e.currentTarget.id === "sets-input") {
+    } else if (e.currentTarget.id === "reps-input") {
+    } else if (e.currentTarget.id === "weight-input") {
+    }
   };
 
   const handleAddLiftToDaySubmission = (
     e: React.SyntheticEvent<HTMLFormElement>,
-    weekIndex: number
+    weekIndex: number,
   ) => {
     e.preventDefault();
     if (!program) {
@@ -274,7 +219,7 @@ function App() {
     setProgram(newProgramObject);
     setSelectedWeek(newProgramObject[weekIndex]);
     setStateForLiftsOfEachDay(newProgramObject);
-    defaultAdditionalLiftInputs(newProgramObject);
+    dynamicFormInputStateScaffolding(newProgramObject);
   };
 
   const addAdditionalInput = (week: number, dayKey: string) => {
@@ -294,37 +239,12 @@ function App() {
   return (
     <>
       <h3>Training Block Creation</h3>
-      {lifts && lifts.length > 0 ? (
-        lifts.map((lift) => (
-          <div key={lift.id}>
-            <span>{lift.name}</span>
-            <button onClick={(e) => handleDeleteLift(lift)}>Delete</button>
-            <br />
-          </div>
-        ))
-      ) : (
-        <div>Add lifts to your program here</div>
-      )}
-      <form onSubmit={(e) => handleAddLiftSubmission(e)}>
-        <div>
-          <label htmlFor="new-lift-text-input">Add A Lift: </label>
-          <input
-            id="new-lift-text-input"
-            value={newLift}
-            onChange={(e) => {
-              handleAddLift(e);
-            }}
-            type="text"
-          />
-        </div>
-        <button type="submit">Add</button>
-      </form>
       <form action="" onSubmit={(e) => handleTrainingProgramSubmission(e)}>
         <div>
           <label htmlFor="block-duration-input">block duration: </label>
           <input
             id="block-duration-input"
-            value={newTrainingBlock.trainingBlockWeeks}
+            value={newProgramWeeks}
             onChange={(e) => handleNewTrainingBlockInputs(e)}
             type="number"
             min={2}
@@ -335,7 +255,7 @@ function App() {
           <label htmlFor="weekly-frequency-input">weekly frequency: </label>
           <input
             id="weekly-frequency-input"
-            value={newTrainingBlock.weeklyFrequency}
+            value={newProgramWeeklyFrequency}
             onChange={(e) => handleNewTrainingBlockInputs(e)}
             type="number"
             min={2}
@@ -343,18 +263,14 @@ function App() {
           />
         </div>
 
-        {lifts && lifts.length > 2 ? (
-          <button type="submit">Create Training Block</button>
-        ) : (
-          <div>Your program must contain atleast 3 exercises to submit</div>
-        )}
+        <button type="submit">Create Training Block</button>
       </form>
       {program &&
         program.map((week) => {
           return (
             <div key={week.week}>
               {" "}
-              <button onClick={(e) => handleShowWeek(week)}>
+              <button onClick={(_e) => handleShowWeek(week)}>
                 {" "}
                 Week {week.week}
               </button>
@@ -383,31 +299,45 @@ function App() {
                 >
                   {additionalLiftInputs &&
                     Object.keys(
-                      additionalLiftInputs[`week${selectedWeek.week}`]
+                      additionalLiftInputs[`week${selectedWeek.week}`],
                     ).map((currDay) => {
                       return currDay === day
                         ? additionalLiftInputs[`week${selectedWeek.week}`][
                             currDay
                           ].map((_, liftIndex) => (
                             <div key={liftIndex}>
-                              <label htmlFor="lift-day-input">Add Lift</label>
-                              <input
-                                id="lift-day-input"
-                                type="text"
-                                value={
-                                  dayLiftsForWeeks[selectedWeek.week - 1]?.[
-                                    index
-                                  ]?.[liftIndex] ?? ""
-                                }
-                                onChange={(e) =>
-                                  handleAddLiftToDay(
-                                    e,
-                                    selectedWeek.week - 1,
-                                    index,
-                                    liftIndex
-                                  )
-                                }
-                              />
+                              <div>
+                                <label htmlFor="lift-input">Add Lift</label>
+                                <input
+                                  id="lift-input"
+                                  type="text"
+                                  value={
+                                    dayLiftsForWeeks[selectedWeek.week - 1]?.[
+                                      index
+                                    ]?.[liftIndex] ?? ""
+                                  }
+                                  onChange={(e) =>
+                                    handleCheckInfoTypeToAdd(
+                                      e,
+                                      selectedWeek.week - 1,
+                                      index,
+                                      liftIndex,
+                                    )
+                                  }
+                                />
+                              </div>
+                              <div>
+                                <label htmlFor="sets-input">Sets</label>
+                                <input id="sets-input" type="number" />
+                              </div>
+                              <div>
+                                <label htmlFor="reps-input">Reps</label>
+                                <input id="reps-input" type="number" />
+                              </div>
+                              <div>
+                                <label htmlFor="weight-input">Weight</label>
+                                <input id="weight-input" type="number" />
+                              </div>
                             </div>
                           ))
                         : "";
