@@ -1,35 +1,14 @@
 import React, { useState } from "react";
+import { useCreateProgramScaffold, useProgram } from "./hooks/useProgramHooks";
+import type {
+  LiftInfo,
+  DayDetail,
+  LiftDayDetails,
+  ProgramDetails,
+  AdditionalInputs,
+} from "./types/types.ts";
 
 // CONVERT ALL PROGRAM STORAGE
-
-interface LiftInfo {
-  id: number;
-  name: string;
-  sets: number;
-  reps: number;
-  weight: number;
-}
-
-interface DayDetail {
-  [key: string]: LiftDayDetails;
-}
-
-interface LiftDayDetails {
-  lifts: Array<string>;
-}
-
-interface ProgramDetails {
-  week: number;
-  days: {
-    [key: string]: LiftDayDetails;
-  };
-}
-
-interface AdditionalInputs {
-  [key: string]: {
-    [key: string]: Array<string>;
-  };
-}
 
 function App() {
   const [program, setProgram] = useState<ProgramDetails[] | null>(null);
