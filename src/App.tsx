@@ -21,8 +21,14 @@ function App() {
   >([[[]]]);
   const [additionalLiftInputs, setAdditionalLiftInputs] =
     useState<AdditionalInputs | null>(null);
+  const programResponse = useProgram();
+  const programScaffoldRemote = useCreateProgramScaffold();
 
-  const handleTrainingProgramSubmission = (
+  if (programResponse.isSuccess) {
+    console.log("react query data", programResponse.data);
+  }
+
+  const handleTrainingProgramSubmission = async (
     e: React.SyntheticEvent<HTMLFormElement>,
   ) => {
     e.preventDefault();
@@ -35,6 +41,11 @@ function App() {
         weeklyFrequency: newProgramWeeklyFrequency,
       };
     }
+
+    programScaffoldRemote.mutate({
+      weeks: newProgramWeeks,
+      weeklyFrequency: newProgramWeeklyFrequency,
+    });
     // expand training block with days in the backend.
     const newProgram: Array<ProgramDetails> =
       createWorkoutProgramScaffolding(trainingBlockInfo);
